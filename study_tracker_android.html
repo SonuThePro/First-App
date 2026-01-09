@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <title>Study Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            font-family: 'Poppins', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .tab-active { 
+            color: #667eea; 
+            border-bottom: 3px solid #667eea;
+        }
+        .scroll-area {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .scroll-area::-webkit-scrollbar { display: none; }
+        .fab {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+            z-index: 40;
+        }
+        .modal-overlay {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        input, select {
+            font-size: 16px !important;
+        }
+        .bottom-nav {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .content-area {
+            height: calc(100vh - 130px);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        @media (min-width: 768px) {
+            .content-area {
+                height: calc(100vh - 140px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 h-full flex flex-col">
+    
+    <header class="gradient-bg text-white py-4 px-4 shadow-lg flex-shrink-0">
+        <div class="flex items-center justify-center gap-2">
+            <span class="text-2xl">📚</span>
+            <h1 class="text-xl font-bold">Study Tracker</h1>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-hidden">
+        
+        <section id="routineSection" class="content-area scroll-area p-4 hidden">
+            <div class="max-w-lg mx-auto">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span>🗓️</span> My Daily Routine
+                </h2>
+                <div id="routineList" class="space-y-3"></div>
+            </div>
+        </section>
+
+        <section id="addMarksSection" class="content-area scroll-area p-4 hidden">
+            <div class="max-w-lg mx-auto">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span>✏️</span> Add Test Marks
+                </h2>
+                <form id="marksForm" class="space-y-4">
+                    <div class="bg-white rounded-2xl card-shadow p-4 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <input type="date" id="testDate" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Test Type</label>
+                                <select id="testType" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white">
+                                    <option value="">Select</option>
+                                    <option value="Boards">Boards</option>
+                                    <option value="CET">CET</option>
+                                    <option value="JEE">JEE</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Cycle</label>
+                                <select id="testCycle" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white">
+                                    <option value="">Select</option>
+                                    <option value="C1">C1</option>
+                                    <option value="C2">C2</option>
+                                    <option value="C3">C3</option>
+                                    <option value="C4">C4</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl card-shadow p-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Subject Marks</label>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-blue-600 font-bold">P</span>
+                                </div>
+                                <div class="flex-1">
+                                    <input type="number" id="physicsMarks" min="0" max="100" placeholder="Physics (0-100)" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-green-600 font-bold">C</span>
+                                </div>
+                                <div class="flex-1">
+                                    <input type="number" id="chemistryMarks" min="0" max="100" placeholder="Chemistry (0-100)" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <span class="text-orange-600 font-bold">M</span>
+                                </div>
+                                <div class="flex-1">
+                                    <input type="number" id="mathsMarks" min="0" max="100" placeholder="Maths (0-100)" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-50 rounded-2xl p-4 flex items-center justify-between">
+                        <span class="text-gray-700 font-medium">Total Marks</span>
+                        <span id="totalMarks" class="text-2xl font-bold text-purple-600">0/300</span>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-4 rounded-xl transition transform active:scale-95 text-lg">
+                        💾 Save Test Marks
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section id="viewDataSection" class="content-area scroll-area p-4 hidden">
+            <div class="max-w-lg mx-auto">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span>📊</span> All Test Data
+                </h2>
+                
+                <div class="bg-white rounded-2xl card-shadow p-3 mb-4">
+                    <div class="flex gap-2">
+                        <select id="filterType" onchange="renderTestData()" class="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white">
+                            <option value="all">All Types</option>
+                            <option value="Boards">Boards</option>
+                            <option value="CET">CET</option>
+                            <option value="JEE">JEE</option>
+                        </select>
+                        <select id="filterCycle" onchange="renderTestData()" class="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white">
+                            <option value="all">All Cycles</option>
+                            <option value="C1">C1</option>
+                            <option value="C2">C2</option>
+                            <option value="C3">C3</option>
+                            <option value="C4">C4</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="summaryStats" class="mb-4"></div>
+                <div id="testDataList" class="space-y-3 pb-4"></div>
+            </div>
+        </section>
+    </main>
+
+    <button id="fabButton" onclick="addRoutineItem()" class="fab hidden active:scale-90 transition">+</button>
+
+    <nav class="bg-white border-t border-gray-200 flex-shrink-0 bottom-nav">
+        <div class="flex justify-around items-center py-2">
+            <button onclick="switchTab('routine')" id="tabRoutine" class="flex flex-col items-center px-4 py-2 tab-active">
+                <span class="text-2xl">🗓️</span>
+                <span class="text-xs mt-1 font-medium">Routine</span>
+            </button>
+            <button onclick="switchTab('addMarks')" id="tabAddMarks" class="flex flex-col items-center px-4 py-2 text-gray-500">
+                <span class="text-2xl">✏️</span>
+                <span class="text-xs mt-1 font-medium">Add Marks</span>
+            </button>
+            <button onclick="switchTab('viewData')" id="tabViewData" class="flex flex-col items-center px-4 py-2 text-gray-500">
+                <span class="text-2xl">📊</span>
+                <span class="text-xs mt-1 font-medium">View Data</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="routineModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Add Routine Item</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                    <input type="time" id="routineTime" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Activity</label>
+                    <input type="text" id="routineActivity" placeholder="e.g., Physics Study" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeRoutineModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-medium">Cancel</button>
+                    <button onclick="saveRoutineItem()" class="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-medium">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center">
+            <div class="text-5xl mb-4">🗑️</div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Delete Item?</h3>
+            <p class="text-gray-500 mb-6">This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-medium">Cancel</button>
+                <button onclick="confirmDelete()" class="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition font-medium">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg z-50 hidden">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        const Storage = {
+            get: function(key) {
+                try {
+                    if (typeof Android !== 'undefined' && Android.getData) {
+                        const data = Android.getData(key);
+                        return data ? JSON.parse(data) : null;
+                    }
+                    return JSON.parse(localStorage.getItem(key));
+                } catch (e) {
+                    console.error('Storage get error:', e);
+                    return null;
+                }
+            },
+            set: function(key, value) {
+                try {
+                    const jsonStr = JSON.stringify(value);
+                    if (typeof Android !== 'undefined' && Android.saveData) {
+                        Android.saveData(key, jsonStr);
+                    }
+                    localStorage.setItem(key, jsonStr);
+                } catch (e) {
+                    console.error('Storage set error:', e);
+                }
+            }
+        };
+
+        let routine = Storage.get('routine') || [
+            { time: '06:00', activity: 'Wake Up & Fresh Up' },
+            { time: '06:30', activity: 'Morning Exercise' },
+            { time: '07:00', activity: 'Physics Study' },
+            { time: '09:00', activity: 'Breakfast' },
+            { time: '09:30', activity: 'Chemistry Study' },
+            { time: '12:00', activity: 'Lunch Break' },
+            { time: '13:00', activity: 'Maths Practice' },
+            { time: '15:30', activity: 'Short Break' },
+            { time: '16:00', activity: 'Problem Solving' },
+            { time: '18:00', activity: 'Revision' },
+            { time: '20:00', activity: 'Dinner' },
+            { time: '21:00', activity: 'Light Reading' },
+            { time: '22:30', activity: 'Sleep' }
+        ];
+
+        let testMarks = Storage.get('testMarks') || [];
+        let deleteCallback = null;
+
+        function switchTab(tab) {
+            document.getElementById('routineSection').classList.add('hidden');
+            document.getElementById('addMarksSection').classList.add('hidden');
+            document.getElementById('viewDataSection').classList.add('hidden');
+            document.getElementById('tabRoutine').classList.remove('tab-active');
+            document.getElementById('tabRoutine').classList.add('text-gray-500');
+            document.getElementById('tabAddMarks').classList.remove('tab-active');
+            document.getElementById('tabAddMarks').classList.add('text-gray-500');
+            document.getElementById('tabViewData').classList.remove('tab-active');
+            document.getElementById('tabViewData').classList.add('text-gray-500');
+            document.getElementById('fabButton').classList.add('hidden');
+            if (tab === 'routine') {
+                document.getElementById('routineSection').classList.remove('hidden');
+                document.getElementById('tabRoutine').classList.add('tab-active');
+                document.getElementById('tabRoutine').classList.remove('text-gray-500');
+                document.getElementById('fabButton').classList.remove('hidden');
+            } else if (tab === 'addMarks') {
+                document.getElementById('addMarksSection').classList.remove('hidden');
+                document.getElementById('tabAddMarks').classList.add('tab-active');
+                document.getElementById('tabAddMarks').classList.remove('text-gray-500');
+            } else if (tab === 'viewData') {
+                document.getElementById('viewDataSection').classList.remove('hidden');
+                document.getElementById('tabViewData').classList.add('tab-active');
+                document.getElementById('tabViewData').classList.remove('text-gray-500');
+                renderTestData();
+            }
+        }
+
+        switchTab('routine');
+        document.getElementById('testDate').valueAsDate = new Date();
+        ['physicsMarks', 'chemistryMarks', 'mathsMarks'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateTotal);
+        });
+
+        function calculateTotal() {
+            const physics = parseInt(document.getElementById('physicsMarks').value) || 0;
+            const chemistry = parseInt(document.getElementById('chemistryMarks').value) || 0;
+            const maths = parseInt(document.getElementById('mathsMarks').value) || 0;
+            document.getElementById('totalMarks').textContent = `${physics + chemistry + maths}/300`;
+        }
+
+        function renderRoutine() {
+            const list = document.getElementById('routineList');
+            list.innerHTML = routine.map((item, index) => `
+                <div class="bg-white rounded-2xl card-shadow p-4 flex items-center gap-4" onclick="showDeleteRoutine(${index})">
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center text-white">
+                        <div class="text-center">
+                            <div class="text-xs font-bold">${formatTime(item.time).split(' ')[0]}</div>
+                            <div class="text-[10px]">${formatTime(item.time).split(' ')[1]}</div>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-gray-800 font-semibold">${item.activity}</p>
+                        <p class="text-sm text-gray-400">Tap to delete</p>
+                    </div>
+                    <div class="text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatTime(time) {
+            const [hours, minutes] = time.split(':');
+            const h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const hour12 = h % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+
+        function addRoutineItem() {
+            document.getElementById('routineModal').classList.remove('hidden');
+            document.getElementById('routineModal').classList.add('flex');
+        }
+
+        function closeRoutineModal() {
+            document.getElementById('routineModal').classList.add('hidden');
+            document.getElementById('routineModal').classList.remove('flex');
+            document.getElementById('routineTime').value = '';
+            document.getElementById('routineActivity').value = '';
+        }
+
+        function saveRoutineItem() {
+            const time = document.getElementById('routineTime').value;
+            const activity = document.getElementById('routineActivity').value;
+            if (time && activity) {
+                routine.push({ time, activity });
+                routine.sort((a, b) => a.time.localeCompare(b.time));
+                Storage.set('routine', routine);
+                renderRoutine();
+                closeRoutineModal();
+                showToast('Routine item added!');
+            }
+        }
+
+        function showDeleteRoutine(index) {
+            deleteCallback = () => {
+                routine.splice(index, 1);
+                Storage.set('routine', routine);
+                renderRoutine();
+                showToast('Routine item deleted!');
+            };
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('flex');
+            deleteCallback = null;
+        }
+
+        function confirmDelete() {
+            if (deleteCallback) deleteCallback();
+            closeDeleteModal();
+        }
+
+        document.getElementById('marksForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const testData = {
+                id: Date.now(),
+                date: document.getElementById('testDate').value,
+                type: document.getElementById('testType').value,
+                cycle: document.getElementById('testCycle').value,
+                physics: parseInt(document.getElementById('physicsMarks').value),
+                chemistry: parseInt(document.getElementById('chemistryMarks').value),
+                maths: parseInt(document.getElementById('mathsMarks').value)
+            };
+            testData.total = testData.physics + testData.chemistry + testData.maths;
+            testMarks.unshift(testData);
+            Storage.set('testMarks', testMarks);
+            this.reset();
+            document.getElementById('testDate').valueAsDate = new Date();
+            document.getElementById('totalMarks').textContent = '0/300';
+            showToast('Test marks saved! ✓');
+            setTimeout(() => switchTab('viewData'), 500);
+        });
+
+        function renderTestData() {
+            const filterType = document.getElementById('filterType').value;
+            const filterCycle = document.getElementById('filterCycle').value;
+            let filteredData = testMarks.filter(item => {
+                const typeMatch = filterType === 'all' || item.type === filterType;
+                const cycleMatch = filterCycle === 'all' || item.cycle === filterCycle;
+                return typeMatch && cycleMatch;
+            });
+            const list = document.getElementById('testDataList');
+            if (filteredData.length === 0) {
+                list.innerHTML = `<div class="bg-white rounded-2xl card-shadow p-8 text-center"><p class="text-5xl mb-3">📝</p><p class="text-gray-500 font-medium">No test data yet</p><p class="text-sm text-gray-400">Add your first test marks!</p></div>`;
+            } else {
+                list.innerHTML = filteredData.map(item => `
+                    <div class="bg-white rounded-2xl card-shadow p-4" onclick="showDeleteTest(${item.id})">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex gap-2">
+                                <span class="px-3 py-1 text-xs font-bold rounded-full ${getTypeColor(item.type)}">${item.type}</span>
+                                <span class="px-3 py-1 text-xs font-bold bg-gray-200 text-gray-700 rounded-full">${item.cycle}</span>
+                            </div>
+                            <span class="text-sm text-gray-400">${formatDate(item.date)}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            <div class="bg-blue-50 rounded-xl p-3 text-center"><p class="text-xl font-bold text-blue-600">${item.physics}</p><p class="text-xs text-gray-500">Physics</p></div>
+                            <div class="bg-green-50 rounded-xl p-3 text-center"><p class="text-xl font-bold text-green-600">${item.chemistry}</p><p class="text-xs text-gray-500">Chemistry</p></div>
+                            <div class="bg-orange-50 rounded-xl p-3 text-center"><p class="text-xl font-bold text-orange-600">${item.maths}</p><p class="text-xs text-gray-500">Maths</p></div>
+                        </div>
+                        <div class="flex items-center justify-between bg-purple-50 rounded-xl p-3">
+                            <span class="text-gray-600 font-medium">Total</span>
+                            <div><span class="text-xl font-bold text-purple-600">${item.total}/300</span><span class="text-sm text-gray-500 ml-2">(${((item.total/300)*100).toFixed(1)}%)</span></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            updateSummary(filteredData);
+        }
+
+        function updateSummary(data) {
+            const summary = document.getElementById('summaryStats');
+            if (data.length === 0) {
+                summary.innerHTML = '';
+                return;
+            }
+            const avgPhysics = (data.reduce((sum, item) => sum + item.physics, 0) / data.length).toFixed(1);
+            const avgChemistry = (data.reduce((sum, item) => sum + item.chemistry, 0) / data.length).toFixed(1);
+            const avgMaths = (data.reduce((sum, item) => sum + item.maths, 0) / data.length).toFixed(1);
+            const avgTotal = (data.reduce((sum, item) => sum + item.total, 0) / data.length).toFixed(1);
+            const avgPercent = ((avgTotal / 300) * 100).toFixed(1);
+            summary.innerHTML = `
+                <div class="bg-white rounded-2xl card-shadow p-4">
+                    <h3 class="text-sm font-bold text-gray-600 mb-3">📈 Average (${data.length} tests)</h3>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div class="bg-blue-100 rounded-xl p-2"><p class="text-lg font-bold text-blue-700">${avgPhysics}</p><p class="text-xs text-blue-600">Phy</p></div>
+                        <div class="bg-green-100 rounded-xl p-2"><p class="text-lg font-bold text-green-700">${avgChemistry}</p><p class="text-xs text-green-600">Chem</p></div>
+                        <div class="bg-orange-100 rounded-xl p-2"><p class="text-lg font-bold text-orange-700">${avgMaths}</p><p class="text-xs text-orange-600">Math</p></div>
+                        <div class="bg-purple-100 rounded-xl p-2"><p class="text-lg font-bold text-purple-700">${avgPercent}%</p><p class="text-xs text-purple-600">Avg</p></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showDeleteTest(id) {
+            deleteCallback = () => {
+                testMarks = testMarks.filter(item => item.id !== id);
+                Storage.set('testMarks', testMarks);
+                renderTestData();
+                showToast('Test data deleted!');
+            };
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+
+        function getTypeColor(type) {
+            const colors = {'Boards': 'bg-emerald-100 text-emerald-700', 'CET': 'bg-blue-100 text-blue-700', 'JEE': 'bg-red-100 text-red-700'};
+            return colors[type] || 'bg-gray-100 text-gray-700';
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 2000);
+        }
+
+        renderRoutine();
+    </script>
+</body>
+</html>
